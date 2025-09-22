@@ -1,0 +1,27 @@
+{
+  "name": "aegis-backend",
+  "version": "1.0.0",
+  "description": "Smart Tourist Safety Monitoring Backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "keywords": [
+    "safety",
+    "tourism",
+    "disaster-management"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@turf/turf": "^7.1.0",
+    "axios": "^1.12.2",
+    "cheerio": "^1.1.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "node-cron": "^4.2.1",
+    "node-fetch": "^2.7.0",
+    "ws": "^8.18.0"
+  }
+}
