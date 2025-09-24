@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { MapContainer, TileLayer, Circle, Popup, Polyline, Marker } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -22,6 +22,8 @@ function UserMap() {
   const [showEndSuggestions, setShowEndSuggestions] = useState(false);
   const [selectedStart, setSelectedStart] = useState(null);
   const [selectedEnd, setSelectedEnd] = useState(null);
+  const mapRef = useRef(null);
+  const searchTimeoutRef = useRef(null);
 
   useEffect(() => {
     // Connect to WebSocket
@@ -69,35 +71,85 @@ function UserMap() {
     return () => ws.close();
   }, []);
 
-  // Search for locations globally
-  const searchLocation = useCallback(async (query, setSuggestions, setShow) => {
+  // Hybrid search: instant local + API fallback for villages
+  const searchLocation = useCallback((query, setSuggestions, setShow) => {
     if (query.length < 2) {
       setSuggestions([]);
       setShow(false);
       return;
     }
 
-    try {
-      const response = await fetch(`http://localhost:3001/api/search-location?query=${encodeURIComponent(query)}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSuggestions(data.results.slice(0, 8));
-        setShow(true);
-      }
-    } catch (error) {
-      console.error('Location search failed:', error);
-      // Fallback to basic suggestions
-      const basicSuggestions = [
-        { name: 'Delhi, India', lat: 28.6139, lon: 77.2090, country: 'India' },
-        { name: 'Mumbai, India', lat: 19.0760, lon: 72.8777, country: 'India' },
-        { name: 'New York, USA', lat: 40.7128, lon: -74.0060, country: 'USA' },
-        { name: 'London, UK', lat: 51.5074, lon: -0.1278, country: 'UK' },
-        { name: 'Paris, France', lat: 48.8566, lon: 2.3522, country: 'France' },
-        { name: 'Tokyo, Japan', lat: 35.6762, lon: 139.6503, country: 'Japan' }
-      ].filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
-      setSuggestions(basicSuggestions);
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Instant local search for common cities
+    const localCities = [
+      { name: 'Nanded, India', lat: 19.1383, lon: 77.3210, country: 'India' },
+      { name: 'New Delhi, India', lat: 28.6139, lon: 77.2090, country: 'India' },
+      { name: 'Mumbai, India', lat: 19.0760, lon: 72.8777, country: 'India' },
+      { name: 'Pune, India', lat: 18.5204, lon: 73.8567, country: 'India' },
+      { name: 'Bangalore, India', lat: 12.9716, lon: 77.5946, country: 'India' },
+      { name: 'Chennai, India', lat: 13.0827, lon: 80.2707, country: 'India' },
+      { name: 'Hyderabad, India', lat: 17.3850, lon: 78.4867, country: 'India' },
+      { name: 'Kolkata, India', lat: 22.5726, lon: 88.3639, country: 'India' },
+      { name: 'Ahmedabad, India', lat: 23.0225, lon: 72.5714, country: 'India' },
+      { name: 'Jaipur, India', lat: 26.9124, lon: 75.7873, country: 'India' },
+      { name: 'Surat, India', lat: 21.1702, lon: 72.8311, country: 'India' },
+      { name: 'Lucknow, India', lat: 26.8467, lon: 80.9462, country: 'India' },
+      { name: 'Kanpur, India', lat: 26.4499, lon: 80.3319, country: 'India' },
+      { name: 'Nagpur, India', lat: 21.1458, lon: 79.0882, country: 'India' },
+      { name: 'Indore, India', lat: 22.7196, lon: 75.8577, country: 'India' },
+      { name: 'New York, USA', lat: 40.7128, lon: -74.0060, country: 'USA' },
+      { name: 'London, UK', lat: 51.5074, lon: -0.1278, country: 'UK' },
+      { name: 'Paris, France', lat: 48.8566, lon: 2.3522, country: 'France' },
+      { name: 'Tokyo, Japan', lat: 35.6762, lon: 139.6503, country: 'Japan' }
+    ];
+
+    const localMatches = localCities.filter(item => 
+      item.name.toLowerCase().includes(query.toLowerCase())
+    );
+
+    // Show local matches immediately
+    if (localMatches.length > 0) {
+      setSuggestions(localMatches.slice(0, 6));
       setShow(true);
     }
+
+    // API search for villages/smaller places with debounce
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=6&addressdetails=1`);
+        if (response.ok) {
+          const data = await response.json();
+          const apiSuggestions = data.map(item => ({
+            name: item.display_name.split(',')[0] + ', ' + (item.address?.country || item.display_name.split(',').pop().trim()),
+            lat: parseFloat(item.lat),
+            lon: parseFloat(item.lon),
+            country: item.address?.country || item.display_name.split(',').pop().trim(),
+            type: item.type || 'place'
+          }));
+          
+          // Combine local and API results, remove duplicates
+          const combined = [...localMatches, ...apiSuggestions]
+            .filter((item, index, self) => 
+              index === self.findIndex(t => t.name === item.name)
+            )
+            .slice(0, 8);
+          
+          setSuggestions(combined);
+          setShow(true);
+        }
+      } catch (error) {
+        console.error('API search failed:', error);
+        // Keep local results if API fails
+        if (localMatches.length === 0) {
+          setSuggestions([]);
+          setShow(false);
+        }
+      }
+    }, 500);
   }, []);
 
   const selectLocation = (location, isStart) => {
@@ -132,6 +184,16 @@ function UserMap() {
 
     const startCoords = { lat: selectedStart.lat, lon: selectedStart.lon };
     const endCoords = { lat: selectedEnd.lat, lon: selectedEnd.lon };
+
+    // Center map on start location and fit both points
+    if (mapRef.current) {
+      const map = mapRef.current;
+      const bounds = L.latLngBounds(
+        [startCoords.lat, startCoords.lon],
+        [endCoords.lat, endCoords.lon]
+      );
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
 
     try {
       const response = await fetch('http://localhost:3001/api/route', {
@@ -216,6 +278,7 @@ function UserMap() {
           center={userLocation} 
           zoom={10} 
           style={{ height: '100%', width: '100%' }}
+          ref={mapRef}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -282,9 +345,33 @@ function UserMap() {
             />
           )}
           
+          {/* Start Location Marker */}
+          {selectedStart && (
+            <Marker position={[selectedStart.lat, selectedStart.lon]}>
+              <Popup>
+                <div className="p-2">
+                  <h3 className="font-bold text-green-600">Start Location</h3>
+                  <p>{selectedStart.name}</p>
+                </div>
+              </Popup>
+            </Marker>
+          )}
+          
+          {/* End Location Marker */}
+          {selectedEnd && (
+            <Marker position={[selectedEnd.lat, selectedEnd.lon]}>
+              <Popup>
+                <div className="p-2">
+                  <h3 className="font-bold text-red-600">Destination</h3>
+                  <p>{selectedEnd.name}</p>
+                </div>
+              </Popup>
+            </Marker>
+          )}
+          
           {/* User Location */}
           <Marker position={userLocation}>
-            <Popup>Your Location</Popup>
+            <Popup>Your Current Location</Popup>
           </Marker>
         </MapContainer>
       </div>
@@ -336,7 +423,9 @@ function UserMap() {
                     onClick={() => selectLocation(suggestion, true)}
                   >
                     <div className="font-medium text-sm text-white">{suggestion.name}</div>
-                    <div className="text-xs text-gray-400">{suggestion.country}</div>
+                    <div className="text-xs text-gray-400">
+                      {suggestion.country} • {suggestion.lat?.toFixed(4)}, {suggestion.lon?.toFixed(4)}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -365,7 +454,9 @@ function UserMap() {
                     onClick={() => selectLocation(suggestion, false)}
                   >
                     <div className="font-medium text-sm text-white">{suggestion.name}</div>
-                    <div className="text-xs text-gray-400">{suggestion.country}</div>
+                    <div className="text-xs text-gray-400">
+                      {suggestion.country} • {suggestion.lat?.toFixed(4)}, {suggestion.lon?.toFixed(4)}
+                    </div>
                   </div>
                 ))}
               </div>
