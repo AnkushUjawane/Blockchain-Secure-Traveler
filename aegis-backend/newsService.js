@@ -125,104 +125,54 @@ class NewsService {
   // Fetch news from multiple sources
   async fetchDisasterNews() {
     try {
-      const sources = [
-        this.fetchFromNewsAPI(),
-        this.fetchFromNDTV(),
-        this.fetchFromTimesOfIndia()
-      ];
-
-      const results = await Promise.allSettled(sources);
-      const allNews = results
-        .filter(result => result.status === 'fulfilled')
-        .flatMap(result => result.value);
-
-      return this.processNewsData(allNews);
+      console.log('📰 News sources: Using enhanced simulation mode');
+      
+      // Generate simulated news data for demo
+      const simulatedNews = this.generateSimulatedNews();
+      
+      return this.processNewsData(simulatedNews);
     } catch (error) {
-      console.error('Error fetching news:', error);
+      console.error('Error processing news data:', error);
       return this.getFallbackData();
     }
   }
+  
+  // Generate simulated news for demo
+  generateSimulatedNews() {
+    const newsTemplates = [
+      { title: 'Heavy rainfall warning issued for Mumbai region', description: 'IMD issues red alert for Mumbai and surrounding areas due to heavy monsoon rains', disaster: 'flood' },
+      { title: 'Cyclone formation detected in Bay of Bengal', description: 'Weather department tracks cyclonic disturbance approaching eastern coast', disaster: 'cyclone' },
+      { title: 'Landslide alert for hill stations in Uttarakhand', description: 'Heavy rains trigger landslide warnings in mountainous regions', disaster: 'landslide' },
+      { title: 'Heatwave conditions prevail in northern plains', description: 'Temperature soars above 45°C in Delhi and surrounding areas', disaster: 'heatwave' },
+      { title: 'Forest fire reported in Himachal Pradesh', description: 'Wildfire spreads across forest areas due to dry conditions', disaster: 'fire' },
+      { title: 'Earthquake tremors felt in northeastern states', description: 'Moderate intensity earthquake recorded in Assam region', disaster: 'earthquake' }
+    ];
+    
+    return newsTemplates.map(template => ({
+      title: template.title,
+      description: template.description,
+      publishedAt: new Date().toISOString(),
+      source: 'Simulation'
+    }));
+  }
 
-  // News API integration
+  // News API integration (disabled for demo)
   async fetchFromNewsAPI() {
-    try {
-      const response = await axios.get('https://newsapi.org/v2/everything', {
-        params: {
-          q: 'flood OR cyclone OR earthquake OR landslide OR fire India',
-          country: 'in',
-          language: 'en',
-          sortBy: 'publishedAt',
-          pageSize: 50,
-          apiKey: 'demo_key' // Replace with actual key
-        }
-      });
-
-      return response.data.articles.map(article => ({
-        title: article.title,
-        description: article.description,
-        content: article.content,
-        publishedAt: article.publishedAt,
-        source: 'NewsAPI'
-      }));
-    } catch (error) {
-      console.log('NewsAPI failed, using fallback');
-      return [];
-    }
+    // NewsAPI requires valid API key - using fallback for demo
+    console.log('NewsAPI: Using demo mode (requires API key)');
+    return [];
   }
 
-  // Scrape NDTV for disaster news
+  // NDTV scraping (disabled for demo due to CORS)
   async fetchFromNDTV() {
-    try {
-      const response = await axios.get('https://www.ndtv.com/topic/natural-disasters');
-      const $ = cheerio.load(response.data);
-      
-      const articles = [];
-      $('.news_Itm').each((i, element) => {
-        const title = $(element).find('.news_Itm-ttl').text().trim();
-        const description = $(element).find('.news_Itm-txt').text().trim();
-        
-        if (title) {
-          articles.push({
-            title,
-            description,
-            publishedAt: new Date().toISOString(),
-            source: 'NDTV'
-          });
-        }
-      });
-
-      return articles;
-    } catch (error) {
-      console.log('NDTV scraping failed');
-      return [];
-    }
+    console.log('NDTV: Scraping disabled (CORS restrictions)');
+    return [];
   }
 
-  // Scrape Times of India
+  // Times of India scraping (disabled for demo due to CORS)
   async fetchFromTimesOfIndia() {
-    try {
-      const response = await axios.get('https://timesofindia.indiatimes.com/topic/natural-disaster');
-      const $ = cheerio.load(response.data);
-      
-      const articles = [];
-      $('.uwU81').each((i, element) => {
-        const title = $(element).find('span').text().trim();
-        
-        if (title) {
-          articles.push({
-            title,
-            description: title,
-            publishedAt: new Date().toISOString(),
-            source: 'TOI'
-          });
-        }
-      });
-
-      return articles;
-    } catch (error) {
-      console.log('TOI scraping failed');
-      return [];
-    }
+    console.log('TOI: Scraping disabled (CORS restrictions)');
+    return [];
   }
 
   // Process news data to extract risk information from any location

@@ -290,12 +290,29 @@ function UserMap() {
       </div>
       
       {/* Control Panel */}
-      <div className="w-80 bg-white p-4 shadow-lg overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">🛡️ Safety Controls</h2>
+      <div className="w-80 bg-black border-l border-gray-800 shadow-2xl overflow-y-auto">
+        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black p-6 border-b border-gray-700">
+          <div className="flex items-center space-x-4">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-xl shadow-lg">
+              <span className="text-2xl">🛡️</span>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Safety Controls</h2>
+              <p className="text-gray-300 text-sm">Navigate safely with real-time alerts</p>
+            </div>
+          </div>
+        </div>
+        <div className="p-4 space-y-6">
         
         {/* Route Planning */}
-        <div className="mb-6">
-          <h3 className="font-semibold mb-2">🌍 Global Route Planner</h3>
+        <div>
+          <div className="mb-4">
+            <h3 className="text-white font-bold text-base mb-3 flex items-center">
+              <span className="mr-2">🌍</span>
+              Global Route Planner
+            </h3>
+            <p className="text-gray-400 text-sm mb-4">Plan safe routes worldwide</p>
+          </div>
           
           {/* Start Location */}
           <div className="relative mb-2">
@@ -308,18 +325,18 @@ function UserMap() {
                 searchLocation(e.target.value, setStartSuggestions, setShowStartSuggestions);
               }}
               onFocus={() => startPoint && setShowStartSuggestions(true)}
-              className="w-full p-2 border rounded"
+              className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
             />
             {showStartSuggestions && startSuggestions.length > 0 && (
-              <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-48 overflow-y-auto">
+              <div className="absolute z-10 w-full bg-gray-800 border border-gray-600 rounded-b-lg shadow-lg max-h-48 overflow-y-auto">
                 {startSuggestions.map((suggestion, i) => (
                   <div
                     key={i}
-                    className="p-2 hover:bg-gray-100 cursor-pointer border-b"
+                    className="p-3 hover:bg-gray-700 cursor-pointer border-b border-gray-600 text-white"
                     onClick={() => selectLocation(suggestion, true)}
                   >
-                    <div className="font-medium text-sm">{suggestion.name}</div>
-                    <div className="text-xs text-gray-600">{suggestion.country}</div>
+                    <div className="font-medium text-sm text-white">{suggestion.name}</div>
+                    <div className="text-xs text-gray-400">{suggestion.country}</div>
                   </div>
                 ))}
               </div>
@@ -337,18 +354,18 @@ function UserMap() {
                 searchLocation(e.target.value, setEndSuggestions, setShowEndSuggestions);
               }}
               onFocus={() => endPoint && setShowEndSuggestions(true)}
-              className="w-full p-2 border rounded"
+              className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
             />
             {showEndSuggestions && endSuggestions.length > 0 && (
-              <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-48 overflow-y-auto">
+              <div className="absolute z-10 w-full bg-gray-800 border border-gray-600 rounded-b-lg shadow-lg max-h-48 overflow-y-auto">
                 {endSuggestions.map((suggestion, i) => (
                   <div
                     key={i}
-                    className="p-2 hover:bg-gray-100 cursor-pointer border-b"
+                    className="p-3 hover:bg-gray-700 cursor-pointer border-b border-gray-600 text-white"
                     onClick={() => selectLocation(suggestion, false)}
                   >
-                    <div className="font-medium text-sm">{suggestion.name}</div>
-                    <div className="text-xs text-gray-600">{suggestion.country}</div>
+                    <div className="font-medium text-sm text-white">{suggestion.name}</div>
+                    <div className="text-xs text-gray-400">{suggestion.country}</div>
                   </div>
                 ))}
               </div>
@@ -357,78 +374,97 @@ function UserMap() {
           
           <button
             onClick={findSafeRoute}
-            className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white p-3 rounded-lg transition-all duration-200 font-medium text-base shadow-lg"
           >
-            Find Safe Route
+            🗺️ Find Safe Route
           </button>
           
           {routeResult && (
-            <div className="mt-2 space-y-2">
-              <div className={`p-3 rounded ${
-                routeResult.riskLevel === 'High' ? 'bg-red-100 border border-red-300' :
-                routeResult.riskLevel === 'Medium' ? 'bg-yellow-100 border border-yellow-300' :
-                'bg-green-100 border border-green-300'
+            <div className="mt-4 space-y-4">
+              <div className={`p-6 rounded-2xl border-2 shadow-lg backdrop-blur-sm ${
+                routeResult.riskLevel === 'High' ? 'bg-red-900/30 border-red-500/50' :
+                routeResult.riskLevel === 'Medium' ? 'bg-yellow-900/30 border-yellow-500/50' :
+                'bg-green-900/30 border-green-500/50'
               }`}>
-                <p className="font-semibold">
-                  Route Status: {
-                    routeResult.riskLevel === 'High' ? '🚨 High Risk' :
-                    routeResult.riskLevel === 'Medium' ? '⚠️ Caution Required' :
-                    '✅ Safe Route'
-                  }
-                </p>
-                <div className="text-sm mt-1">
-                  <p>📍 Distance: {routeResult.distance} km</p>
-                  <p>⏱️ Duration: ~{routeResult.duration} min</p>
-                  {routeResult.riskScore && <p>🎯 Risk Score: {routeResult.riskScore}/100</p>}
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className={`text-xl font-black ${
+                    routeResult.riskLevel === 'High' ? 'text-red-300' :
+                    routeResult.riskLevel === 'Medium' ? 'text-yellow-300' :
+                    'text-green-300'
+                  }`}>
+                    {
+                      routeResult.riskLevel === 'High' ? '🚨 HIGH RISK ROUTE' :
+                      routeResult.riskLevel === 'Medium' ? '⚠️ CAUTION REQUIRED' :
+                      '✅ SAFE ROUTE'
+                    }
+                  </h3>
+                  <div className={`px-4 py-2 rounded-full font-bold text-white ${
+                    routeResult.riskLevel === 'High' ? 'bg-red-600' :
+                    routeResult.riskLevel === 'Medium' ? 'bg-yellow-600' :
+                    'bg-green-600'
+                  }`}>
+                    {routeResult.riskLevel}
+                  </div>
                 </div>
                 
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-600">
+                    <div className="text-2xl font-black text-blue-400">{routeResult.distance} km</div>
+                    <div className="text-sm font-bold text-gray-300">📍 Distance</div>
+                  </div>
+                  <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-600">
+                    <div className="text-2xl font-black text-purple-400">~{routeResult.duration} min</div>
+                    <div className="text-sm font-bold text-gray-300">⏱️ Duration</div>
+                  </div>
+                </div>
+                
+                {routeResult.riskScore && (
+                  <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-600 mb-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-bold text-gray-200">🎯 Risk Score</span>
+                      <span className={`text-2xl font-black ${
+                        routeResult.riskScore >= 70 ? 'text-red-400' :
+                        routeResult.riskScore >= 40 ? 'text-yellow-400' :
+                        'text-green-400'
+                      }`}>{routeResult.riskScore}/100</span>
+                    </div>
+                  </div>
+                )}
+                
                 {routeResult.riskReasons && routeResult.riskReasons.length > 0 && (
-                  <div className="mt-2">
-                    <p className="font-semibold text-sm">Route Analysis:</p>
-                    <ul className="text-xs list-disc list-inside">
+                  <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-600 mb-4">
+                    <h4 className="font-bold text-gray-200 text-base mb-3">📊 Route Analysis:</h4>
+                    <ul className="space-y-2">
                       {routeResult.riskReasons.map((reason, i) => (
-                        <li key={i} className="text-gray-700">{reason}</li>
+                        <li key={i} className="flex items-start text-gray-300">
+                          <span className="text-blue-400 mr-2 font-bold">•</span>
+                          <span className="font-medium">{reason}</span>
+                        </li>
                       ))}
                     </ul>
                   </div>
                 )}
                 
                 {routeResult.routingService && (
-                  <div className="mt-2">
-                    <p className="text-xs text-gray-500">
-                      Navigation: {routeResult.routingService}
+                  <div className="bg-gray-800/50 p-3 rounded-lg border border-gray-600">
+                    <p className="text-sm font-bold text-gray-300">
+                      🧭 Navigation: {routeResult.routingService}
                     </p>
                   </div>
                 )}
-                
-                {routeResult.affectedZones && routeResult.affectedZones.length > 0 && (
-                  <div className="mt-2">
-                    <p className="font-semibold text-sm">Affected Areas:</p>
-                    {routeResult.affectedZones.map((zone, i) => (
-                      <div key={i} className="text-xs bg-gray-50 p-1 rounded mt-1">
-                        <span className="font-medium">{zone.name}</span> - {zone.disaster}
-                        <span className="text-gray-500"> ({zone.distance}km away)</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {routeResult.warnings?.map((warning, i) => (
-                  <p key={i} className="text-red-700 text-sm mt-1 font-medium">{warning}</p>
-                ))}
               </div>
               
               {routeResult.alternativeRoute && (
-                <div className="p-2 bg-blue-50 border border-blue-200 rounded">
-                  <p className="font-semibold text-blue-700">🛡️ Safe Alternative Available</p>
-                  <p className="text-sm text-blue-600">
+                <div className="p-4 bg-blue-900/30 border border-blue-500/50 rounded-2xl shadow-lg backdrop-blur-sm">
+                  <h4 className="font-bold text-blue-300 text-lg mb-2">🛡️ Safe Alternative Available</h4>
+                  <p className="text-base font-medium text-blue-400 mb-3">
                     Distance: {routeResult.alternativeRoute.distance} km
                   </p>
                   <button 
                     onClick={() => setRouteResult({...routeResult, route: routeResult.alternativeRoute.geometry, isSafe: true})}
-                    className="mt-1 bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600"
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200 shadow-lg transform hover:scale-105"
                   >
-                    Use Safe Route
+                    ✅ Use Safe Route
                   </button>
                 </div>
               )}
@@ -437,50 +473,71 @@ function UserMap() {
         </div>
 
         {/* SOS Button */}
-        <button
-          onClick={sendSOS}
-          className="w-full bg-red-500 text-white p-4 rounded-lg text-xl font-bold hover:bg-red-600 mb-6"
-        >
-          🆘 EMERGENCY SOS
-        </button>
+        <div className="bg-gradient-to-br from-red-900/40 to-red-800/20 border border-red-500/30 rounded-xl p-4 backdrop-blur-sm">
+          <button
+            onClick={sendSOS}
+            className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white p-4 rounded-xl text-lg font-bold transition-all duration-200 shadow-lg animate-pulse"
+          >
+            🆘 EMERGENCY SOS
+          </button>
+          <p className="text-red-400 text-sm text-center mt-3 font-medium">Instant Emergency Assistance</p>
+          <p className="text-red-300 text-xs text-center mt-1">Available 24/7 - GPS Location Shared</p>
+        </div>
 
         {/* Risk Status */}
         <div>
-          <h3 className="font-semibold mb-2">Current Risk Status</h3>
+          <div className="mb-4">
+            <h3 className="text-white font-bold text-base mb-2 flex items-center">
+              <span className="mr-2">⚠️</span>
+              Current Risk Status
+            </h3>
+            <p className="text-gray-400 text-sm">Live monitoring across regions</p>
+          </div>
           {riskData.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">Loading risk data...</p>
+            <p className="text-gray-400 text-center py-6 bg-gray-800 rounded-lg border border-gray-700">Loading risk data...</p>
           ) : (
             riskData.map((zone, i) => (
-              <div key={i} className="mb-2 p-3 border rounded">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-medium">{zone.name}</span>
+              <div key={i} className="mb-3 bg-gradient-to-r from-gray-900 to-gray-800 border border-gray-700 rounded-xl p-3 hover:border-gray-600 transition-colors">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <span className="font-medium text-white text-sm">{zone.name}</span>
+                    {zone.locationType && (
+                      <span className="ml-2 text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">
+                        {zone.locationType}
+                      </span>
+                    )}
+                  </div>
                   <span 
-                    className="px-2 py-1 rounded text-sm font-semibold text-white"
+                    className="px-2 py-1 rounded-lg text-xs font-bold text-white"
                     style={{ backgroundColor: zone.color }}
                   >
                     {zone.risk}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 mb-1">{zone.disaster}</p>
+                <p className="text-sm text-gray-300 mb-2">{zone.disaster}</p>
                 {zone.reasons && (
-                  <div className="text-xs text-gray-700 mb-1">
-                    <strong>Reasons:</strong>
-                    <ul className="list-disc list-inside ml-2">
+                  <div className="text-xs text-gray-400 mb-2">
+                    <div className="font-medium mb-1 text-gray-300">Reasons:</div>
+                    <ul className="space-y-1">
                       {zone.reasons.slice(0, 2).map((reason, i) => (
-                        <li key={i}>{reason}</li>
+                        <li key={i} className="flex items-start">
+                          <span className="text-blue-400 mr-1">•</span>
+                          <span>{reason}</span>
+                        </li>
                       ))}
                     </ul>
                   </div>
                 )}
                 {zone.riskScore && (
-                  <div className="text-xs text-gray-500">
-                    Risk Score: {zone.riskScore}/100
-                    {zone.confidence && ` (${zone.confidence}% confidence)`}
+                  <div className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1 rounded border border-gray-700">
+                    Risk: {zone.riskScore}/100
+                    {zone.confidence && ` | Confidence: ${zone.confidence}%`}
                   </div>
                 )}
               </div>
             ))
           )}
+        </div>
         </div>
       </div>
     </div>
