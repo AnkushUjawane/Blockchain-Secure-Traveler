@@ -99,7 +99,7 @@ function AdminDashboard() {
         >
           <TileLayer
             url="https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+            attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
           />
           
           {/* Risk Zones */}
