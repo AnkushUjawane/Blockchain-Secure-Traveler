@@ -1,8 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import UserMap from './components/UserMap';
 import AdminDashboard from './components/AdminDashboard';
+import Login from './components/Login';
 
-function Navbar() {
+function Navbar({ user, onLogout }) {
   const location = useLocation();
   
   return (
@@ -22,6 +24,9 @@ function Navbar() {
           
           {/* Navigation Links */}
           <div className="flex items-center space-x-6">
+            <div className="text-white text-sm">
+              Welcome, {user?.name || 'User'}
+            </div>
             <Link 
               to="/" 
               style={{ textDecoration: 'none' }}
@@ -46,6 +51,12 @@ function Navbar() {
               <span className="text-lg">⚡</span>
               <span>Control Center</span>
             </Link>
+            <button
+              onClick={onLogout}
+              className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-all duration-200"
+            >
+              🚪 Logout
+            </button>
           </div>
         </div>
         
@@ -56,10 +67,43 @@ function Navbar() {
 }
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const savedUser = localStorage.getItem('aegis_current_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+    setIsLoading(false);
+  }, []);
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('aegis_current_user');
+    setUser(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login onLogin={handleLogin} />;
+  }
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-900">
-        <Navbar />
+        <Navbar user={user} onLogout={handleLogout} />
         
         <Routes>
           <Route path="/" element={<UserMap />} />
