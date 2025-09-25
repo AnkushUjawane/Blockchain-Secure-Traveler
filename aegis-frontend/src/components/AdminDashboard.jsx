@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, Circle, Popup, Marker } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -26,6 +26,8 @@ function AdminDashboard() {
   const [riskData, setRiskData] = useState([]);
   const [sosAlerts, setSosAlerts] = useState([]);
   const [stats, setStats] = useState({ High: 0, Medium: 0, Low: 0 });
+  const mapRef = useRef(null);
+
 
   useEffect(() => {
     // Connect to WebSocket
@@ -74,14 +76,16 @@ function AdminDashboard() {
   };
 
   const respondToSOS = (alertId) => {
-    setSosAlerts(prev => prev.map(alert => 
-      alert.id === alertId 
-        ? { ...alert, status: 'Responded', respondedAt: new Date().toISOString() }
-        : alert
-    ));
+    setSosAlerts(prev => prev.filter(alert => alert.id !== alertId));
   };
 
-  const getTotalAlerts = () => sosAlerts.filter(alert => !alert.status).length;
+  const getTotalAlerts = () => sosAlerts.length;
+
+  const centerMapOnAlert = (alert) => {
+    if (mapRef.current) {
+      mapRef.current.setView([alert.lat, alert.lon], 15);
+    }
+  };
 
   return (
     <div className="flex h-screen">
@@ -91,10 +95,11 @@ function AdminDashboard() {
           center={[28.6139, 77.2090]} 
           zoom={9} 
           style={{ height: '100%', width: '100%' }}
+          ref={mapRef}
         >
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
           />
           
           {/* Risk Zones */}
@@ -127,8 +132,8 @@ function AdminDashboard() {
             </Circle>
           ))}
           
-          {/* SOS Markers */}
-          {sosAlerts.map((alert, i) => (
+          {/* SOS Markers - Only show active alerts */}
+          {sosAlerts.filter(alert => !alert.status).map((alert, i) => (
             <Marker
               key={alert.id}
               position={[alert.lat, alert.lon]}
@@ -139,7 +144,7 @@ function AdminDashboard() {
                   <h3 className="font-bold text-red-600">SOS Alert #{alert.id}</h3>
                   <p>Time: {new Date(alert.timestamp).toLocaleString()}</p>
                   <p>Message: {alert.message}</p>
-                  <p>Status: {alert.status || 'Active'}</p>
+                  <p>Status: Active</p>
                 </div>
               </Popup>
             </Marker>
@@ -225,17 +230,13 @@ function AdminDashboard() {
               sosAlerts.map((alert, i) => (
                 <div 
                   key={alert.id} 
-                  className={`border rounded-lg p-3 ${
-                    alert.status 
-                      ? 'bg-green-900/30 border-green-500/50' 
-                      : 'bg-red-900/30 border-red-500/50'
-                  }`}
+                  className="border rounded-lg p-3 cursor-pointer hover:bg-opacity-80 transition-all duration-200 bg-red-900/30 border-red-500/50 hover:border-red-400/70"
+                  onClick={() => centerMapOnAlert(alert)}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="font-semibold text-red-300">
                         Alert #{alert.id}
-                        {alert.status && <span className="text-green-400 ml-2">✓ {alert.status}</span>}
                       </div>
                       <div className="text-sm text-gray-400">
                         {new Date(alert.timestamp).toLocaleString()}
@@ -245,14 +246,15 @@ function AdminDashboard() {
                         Location: {alert.lat?.toFixed(4)}, {alert.lon?.toFixed(4)}
                       </div>
                     </div>
-                    {!alert.status && (
-                      <button 
-                        onClick={() => respondToSOS(alert.id)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 shadow-md border border-blue-500 hover:border-blue-400"
-                      >
-                        Respond
-                      </button>
-                    )}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        respondToSOS(alert.id);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 shadow-md border border-blue-500 hover:border-blue-400"
+                    >
+                      Resolve
+                    </button>
                   </div>
                 </div>
               ))
