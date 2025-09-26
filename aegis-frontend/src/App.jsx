@@ -18,7 +18,7 @@ function Navbar({ user, onLogout }) {
             </div>
             <div>
               <h1 className="text-3xl font-black text-white tracking-tight">Aegis</h1>
-              <p className="text-blue-100 text-base font-bold">Smart Tourist Safety Monitor</p>
+              <p className="text-blue-100 text-base font-bold">Smart Traveller System</p>
             </div>
           </div>
           

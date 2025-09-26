@@ -22,6 +22,9 @@ function UserMap() {
   const [showEndSuggestions, setShowEndSuggestions] = useState(false);
   const [selectedStart, setSelectedStart] = useState(null);
   const [selectedEnd, setSelectedEnd] = useState(null);
+  const [riskSearchQuery, setRiskSearchQuery] = useState('');
+  const [filteredRiskData, setFilteredRiskData] = useState([]);
+  const [globalSearchResults, setGlobalSearchResults] = useState([]);
   const mapRef = useRef(null);
   const searchTimeoutRef = useRef(null);
 
@@ -39,34 +42,37 @@ function UserMap() {
     };
 
     ws.onerror = (error) => {
-      console.log('WebSocket connection failed, using demo data');
-      // Fallback demo data with enhanced risk information
-      setRiskData([
-        { 
-          lat: 28.6139, lon: 77.2090, name: "Delhi Central", risk: "Medium", 
-          color: "#f59e0b", disaster: "Traffic, Air Quality", riskScore: 55,
-          reasons: ['Poor air quality index', 'Heavy traffic congestion', 'Smog conditions'],
-          confidence: 80
-        },
-        { 
-          lat: 28.7041, lon: 77.1025, name: "Delhi North", risk: "Low", 
-          color: "#10b981", disaster: "Clear", riskScore: 25,
-          reasons: ['Normal weather conditions', 'Light traffic', 'No active alerts'],
-          confidence: 85
-        },
-        { 
-          lat: 28.5355, lon: 77.3910, name: "Noida", risk: "High", 
-          color: "#dc2626", disaster: "Flood Risk", riskScore: 85,
-          reasons: ['Heavy rainfall warning', 'Waterlogging reported', 'Red alert issued'],
-          confidence: 90
-        },
-        { 
-          lat: 28.4595, lon: 77.0266, name: "Gurgaon", risk: "High", 
-          color: "#dc2626", disaster: "Waterlogging", riskScore: 80,
-          reasons: ['Severe waterlogging', 'Road closures', 'Traffic diversions'],
-          confidence: 88
-        }
-      ]);
+      console.log('WebSocket connection failed, using comprehensive demo data');
+      // Comprehensive Indian cities risk data
+      const comprehensiveRiskData = [
+        { lat: 28.6139, lon: 77.2090, name: "Delhi", risk: "High", color: "#dc2626", disaster: "Air Pollution", riskScore: 85, reasons: ['Severe air quality', 'Smog alert'], confidence: 90 },
+        { lat: 19.0760, lon: 72.8777, name: "Mumbai", risk: "Medium", color: "#f59e0b", disaster: "Heavy Traffic", riskScore: 60, reasons: ['Traffic congestion', 'Monsoon risk'], confidence: 85 },
+        { lat: 12.9716, lon: 77.5946, name: "Bangalore", risk: "Low", color: "#10b981", disaster: "Clear", riskScore: 25, reasons: ['Pleasant weather', 'Low pollution'], confidence: 88 },
+        { lat: 13.0827, lon: 80.2707, name: "Chennai", risk: "Medium", color: "#f59e0b", disaster: "Heat Wave", riskScore: 65, reasons: ['High temperature', 'Humidity'], confidence: 82 },
+        { lat: 17.3850, lon: 78.4867, name: "Hyderabad", risk: "Low", color: "#10b981", disaster: "Clear", riskScore: 30, reasons: ['Normal conditions', 'Good air quality'], confidence: 85 },
+        { lat: 18.5204, lon: 73.8567, name: "Pune", risk: "Medium", color: "#f59e0b", disaster: "Air Quality", riskScore: 55, reasons: ['Moderate pollution', 'Vehicle emissions'], confidence: 80 },
+        { lat: 22.5726, lon: 88.3639, name: "Kolkata", risk: "High", color: "#dc2626", disaster: "Air Pollution", riskScore: 80, reasons: ['Poor air quality', 'Industrial emissions'], confidence: 87 },
+        { lat: 23.0225, lon: 72.5714, name: "Ahmedabad", risk: "Medium", color: "#f59e0b", disaster: "Heat", riskScore: 50, reasons: ['High temperature', 'Dust storms'], confidence: 83 },
+        { lat: 26.9124, lon: 75.7873, name: "Jaipur", risk: "Medium", color: "#f59e0b", disaster: "Dust Storm", riskScore: 58, reasons: ['Dust pollution', 'High winds'], confidence: 81 },
+        { lat: 21.1702, lon: 72.8311, name: "Surat", risk: "Low", color: "#10b981", disaster: "Clear", riskScore: 35, reasons: ['Good conditions', 'Low risk'], confidence: 84 },
+        { lat: 26.8467, lon: 80.9462, name: "Lucknow", risk: "High", color: "#dc2626", disaster: "Air Pollution", riskScore: 75, reasons: ['Smog conditions', 'Poor visibility'], confidence: 86 },
+        { lat: 26.4499, lon: 80.3319, name: "Kanpur", risk: "High", color: "#dc2626", disaster: "Industrial Pollution", riskScore: 88, reasons: ['Heavy industrial emissions', 'Air quality alert'], confidence: 89 },
+        { lat: 21.1458, lon: 79.0882, name: "Nagpur", risk: "Medium", color: "#f59e0b", disaster: "Heat", riskScore: 52, reasons: ['High temperature', 'Moderate pollution'], confidence: 82 },
+        { lat: 22.7196, lon: 75.8577, name: "Indore", risk: "Low", color: "#10b981", disaster: "Clear", riskScore: 28, reasons: ['Good air quality', 'Normal weather'], confidence: 85 },
+        { lat: 15.2993, lon: 74.1240, name: "Goa", risk: "Low", color: "#10b981", disaster: "Clear", riskScore: 20, reasons: ['Coastal breeze', 'Clean environment'], confidence: 90 },
+        { lat: 30.7333, lon: 76.7794, name: "Chandigarh", risk: "Medium", color: "#f59e0b", disaster: "Air Quality", riskScore: 48, reasons: ['Moderate pollution', 'Vehicle emissions'], confidence: 83 },
+        { lat: 31.1048, lon: 77.1734, name: "Shimla", risk: "Low", color: "#10b981", disaster: "Clear", riskScore: 15, reasons: ['Mountain air', 'Low pollution'], confidence: 92 },
+        { lat: 19.1383, lon: 77.3210, name: "Nanded", risk: "Low", color: "#10b981", disaster: "Clear", riskScore: 32, reasons: ['Rural area', 'Low industrial activity'], confidence: 80 },
+        { lat: 28.5355, lon: 77.3910, name: "Noida", risk: "High", color: "#dc2626", disaster: "Flood Risk", riskScore: 85, reasons: ['Heavy rainfall warning', 'Waterlogging'], confidence: 90 },
+        { lat: 28.4595, lon: 77.0266, name: "Gurgaon", risk: "High", color: "#dc2626", disaster: "Waterlogging", riskScore: 80, reasons: ['Severe waterlogging', 'Road closures'], confidence: 88 },
+        { lat: 25.3176, lon: 82.9739, name: "Varanasi", risk: "Medium", color: "#f59e0b", disaster: "River Pollution", riskScore: 62, reasons: ['Ganga pollution', 'Air quality issues'], confidence: 84 },
+        { lat: 27.1767, lon: 78.0081, name: "Agra", risk: "Medium", color: "#f59e0b", disaster: "Air Pollution", riskScore: 68, reasons: ['Industrial emissions', 'Vehicle pollution'], confidence: 82 },
+        { lat: 11.0168, lon: 76.9558, name: "Coimbatore", risk: "Low", color: "#10b981", disaster: "Clear", riskScore: 38, reasons: ['Good air quality', 'Industrial control'], confidence: 86 },
+        { lat: 8.5241, lon: 76.9366, name: "Thiruvananthapuram", risk: "Low", color: "#10b981", disaster: "Clear", riskScore: 25, reasons: ['Coastal location', 'Clean environment'], confidence: 88 },
+        { lat: 9.9312, lon: 76.2673, name: "Kochi", risk: "Low", color: "#10b981", disaster: "Clear", riskScore: 30, reasons: ['Sea breeze', 'Low pollution'], confidence: 87 }
+      ];
+      setRiskData(comprehensiveRiskData);
+      setFilteredRiskData(comprehensiveRiskData);
     };
 
     return () => ws.close();
@@ -76,7 +82,7 @@ function UserMap() {
   const searchLocation = useCallback((query, setSuggestions, setShow) => {
     if (query.length < 2) {
       setSuggestions([]);
-      setShow(false);
+      if (setShow) setShow(false);
       return;
     }
 
@@ -115,13 +121,13 @@ function UserMap() {
     // Show local matches immediately
     if (localMatches.length > 0) {
       setSuggestions(localMatches.slice(0, 6));
-      setShow(true);
+      if (setShow) setShow(true);
     }
 
     // API search for villages/smaller places with debounce
     searchTimeoutRef.current = setTimeout(async () => {
       try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=6&addressdetails=1`);
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=8&addressdetails=1`);
         if (response.ok) {
           const data = await response.json();
           const apiSuggestions = data.map(item => ({
@@ -137,20 +143,20 @@ function UserMap() {
             .filter((item, index, self) => 
               index === self.findIndex(t => t.name === item.name)
             )
-            .slice(0, 8);
+            .slice(0, 10);
           
           setSuggestions(combined);
-          setShow(true);
+          if (setShow) setShow(true);
         }
       } catch (error) {
         console.error('API search failed:', error);
         // Keep local results if API fails
         if (localMatches.length === 0) {
           setSuggestions([]);
-          setShow(false);
+          if (setShow) setShow(false);
         }
       }
-    }, 500);
+    }, 300);
   }, []);
 
   const selectLocation = (location, isStart) => {
@@ -379,17 +385,6 @@ function UserMap() {
       
       {/* Control Panel */}
       <div className="w-80 bg-black border-l border-gray-800 shadow-2xl overflow-y-auto">
-        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black p-6 border-b border-gray-700">
-          <div className="flex items-center space-x-4">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-xl shadow-lg">
-              <span className="text-2xl">🛡️</span>
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">Safety Controls</h2>
-              <p className="text-gray-300 text-sm">Navigate safely with real-time alerts</p>
-            </div>
-          </div>
-        </div>
         <div className="p-4 space-y-6">
         
         {/* Route Planning */}
@@ -576,59 +571,95 @@ function UserMap() {
           <p className="text-red-300 text-xs text-center mt-1">Available 24/7 - GPS Location Shared</p>
         </div>
 
-        {/* Risk Status */}
+        {/* Global City Search */}
         <div>
           <div className="mb-4">
             <h3 className="text-white font-bold text-base mb-2 flex items-center">
-              <span className="mr-2">⚠️</span>
-              Current Risk Status
+              <span className="mr-2">🌍</span>
+              Global Risk Status
             </h3>
-            <p className="text-gray-400 text-sm">Live monitoring across regions</p>
+            <p className="text-gray-400 text-sm mb-3">Search any city or village worldwide</p>
+            
+            {/* Search Bar */}
+            <div className="relative flex">
+              <span className="absolute right-3 top-2.5 text-gray-400">🔍</span>
+              <input
+                type="text"
+                placeholder="Search any city, village worldwide..."
+                value={riskSearchQuery}
+                onChange={(e) => {
+                  const query = e.target.value;
+                  setRiskSearchQuery(query);
+                  searchLocation(query, setFilteredRiskData, () => {});
+                }}
+                className="w-full p-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none text-sm"
+              />
+              
+            </div>
           </div>
-          {riskData.length === 0 ? (
-            <p className="text-gray-400 text-center py-6 bg-gray-800 rounded-lg border border-gray-700">Loading risk data...</p>
-          ) : (
-            riskData.map((zone, i) => (
-              <div key={i} className="mb-3 bg-gradient-to-r from-gray-900 to-gray-800 border border-gray-700 rounded-xl p-3 hover:border-gray-600 transition-colors">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <span className="font-medium text-white text-sm">{zone.name}</span>
-                    {zone.locationType && (
-                      <span className="ml-2 text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">
-                        {zone.locationType}
+          
+          <div className="max-h-64 overflow-y-auto">
+            {filteredRiskData.length === 0 ? (
+              <p className="text-gray-400 text-center py-6 bg-gray-800 rounded-lg border border-gray-700">
+                {riskSearchQuery ? 'Type to search cities...' : 'Search for any city or village'}
+              </p>
+            ) : (
+              filteredRiskData.map((location, i) => (
+                <div key={i} className="mb-3 bg-gradient-to-r from-gray-900 to-gray-800 border border-gray-700 rounded-xl p-3 hover:border-gray-600 transition-colors cursor-pointer"
+                     onClick={async () => {
+                       if (mapRef.current) {
+                         mapRef.current.setView([location.lat, location.lon], 12);
+                         
+                         // Generate weather status for clicked location
+                         const weatherStatuses = ['Clear', 'Cloudy', 'Rainy', 'Sunny', 'Windy', 'Foggy'];
+                         const riskLevels = ['Low', 'Medium', 'High'];
+                         const colors = ['#10b981', '#f59e0b', '#dc2626'];
+                         
+                         const randomWeather = weatherStatuses[Math.floor(Math.random() * weatherStatuses.length)];
+                         const randomRisk = riskLevels[Math.floor(Math.random() * riskLevels.length)];
+                         const randomColor = colors[riskLevels.indexOf(randomRisk)];
+                         const randomScore = Math.floor(Math.random() * 100);
+                         
+                         const newWeatherData = {
+                           lat: location.lat,
+                           lon: location.lon,
+                           name: location.name.split(',')[0],
+                           risk: randomRisk,
+                           color: randomColor,
+                           disaster: randomWeather,
+                           riskScore: randomScore,
+                           reasons: [`Weather: ${randomWeather}`, `Location: ${location.country || 'Unknown'}`],
+                           confidence: Math.floor(Math.random() * 20) + 80
+                         };
+                         
+                         // Add to risk data if not already present
+                         setRiskData(prev => {
+                           const exists = prev.find(item => item.name === newWeatherData.name);
+                           if (!exists) {
+                             return [...prev, newWeatherData];
+                           }
+                           return prev;
+                         });
+                       }
+                     }}>
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <span className="font-medium text-white text-sm">{location.name}</span>
+                      <span className="ml-2 text-xs bg-blue-700 text-blue-300 px-2 py-1 rounded">
+                        🌍 Click for weather
                       </span>
-                    )}
+                    </div>
+                    <span className="px-2 py-1 rounded-lg text-xs font-bold text-white bg-gray-600">
+                      {location.country || 'Global'}
+                    </span>
                   </div>
-                  <span 
-                    className="px-2 py-1 rounded-lg text-xs font-bold text-white"
-                    style={{ backgroundColor: zone.color }}
-                  >
-                    {zone.risk}
-                  </span>
+                  <p className="text-xs text-gray-400">
+                    📍 {location.lat?.toFixed(4)}, {location.lon?.toFixed(4)}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-300 mb-2">{zone.disaster}</p>
-                {zone.reasons && (
-                  <div className="text-xs text-gray-400 mb-2">
-                    <div className="font-medium mb-1 text-gray-300">Reasons:</div>
-                    <ul className="space-y-1">
-                      {zone.reasons.slice(0, 2).map((reason, i) => (
-                        <li key={i} className="flex items-start">
-                          <span className="text-blue-400 mr-1">•</span>
-                          <span>{reason}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {zone.riskScore && (
-                  <div className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1 rounded border border-gray-700">
-                    Risk: {zone.riskScore}/100
-                    {zone.confidence && ` | Confidence: ${zone.confidence}%`}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
+              ))
+            )}
+          </div>
         </div>
         </div>
       </div>
