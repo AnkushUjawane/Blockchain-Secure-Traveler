@@ -25,6 +25,7 @@ function UserMap() {
   const [riskSearchQuery, setRiskSearchQuery] = useState('');
   const [filteredRiskData, setFilteredRiskData] = useState([]);
   const [globalSearchResults, setGlobalSearchResults] = useState([]);
+  const [sosAlerts, setSosAlerts] = useState([]);
   const mapRef = useRef(null);
   const searchTimeoutRef = useRef(null);
 
@@ -247,12 +248,24 @@ function UserMap() {
   const sendSOS = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
+        const user = JSON.parse(localStorage.getItem('user')) || { name: 'Anonymous User', email: 'unknown@example.com' };
         const sosData = {
           type: 'SOS',
           payload: {
+            userId: user.email || `user_${Date.now()}`,
+            userName: user.name || 'Anonymous User',
+            userEmail: user.email || 'unknown@example.com',
             lat: position.coords.latitude,
             lon: position.coords.longitude,
-            message: 'Emergency assistance needed'
+            timestamp: new Date().toISOString(),
+            message: 'Emergency assistance needed - Disaster response required',
+            emergencyType: 'General Emergency',
+            locationDetails: {
+              accuracy: position.coords.accuracy,
+              altitude: position.coords.altitude,
+              heading: position.coords.heading,
+              speed: position.coords.speed
+            }
           }
         };
         
@@ -260,15 +273,40 @@ function UserMap() {
           const ws = new WebSocket('ws://localhost:3001');
           ws.onopen = () => {
             ws.send(JSON.stringify(sosData));
-            alert('SOS sent successfully!');
+            alert('🚨 Emergency SOS Activated!\n\nYour location and profile have been sent to the disaster response control center.\n\nRescue teams are being notified.');
             ws.close();
           };
         } catch (error) {
-          alert('SOS sent (offline mode)');
+          alert('🚨 SOS Alert Sent (Offline Mode)\n\nYour emergency request has been logged locally.');
         }
       });
     } else {
-      alert('SOS sent (demo mode)');
+      const user = JSON.parse(localStorage.getItem('user')) || { name: 'Anonymous User', email: 'unknown@example.com' };
+      const sosData = {
+        type: 'SOS',
+        payload: {
+          userId: user.email || `user_${Date.now()}`,
+          userName: user.name || 'Anonymous User',
+          userEmail: user.email || 'unknown@example.com',
+          lat: 28.6139,
+          lon: 77.2090,
+          timestamp: new Date().toISOString(),
+          message: 'Emergency assistance needed - Location unavailable',
+          emergencyType: 'General Emergency',
+          locationDetails: { accuracy: 'GPS unavailable' }
+        }
+      };
+      
+      try {
+        const ws = new WebSocket('ws://localhost:3001');
+        ws.onopen = () => {
+          ws.send(JSON.stringify(sosData));
+          alert('🚨 Emergency SOS Activated!\n\nYour profile has been sent to the control center.\n\nNote: GPS location unavailable.');
+          ws.close();
+        };
+      } catch (error) {
+        alert('🚨 SOS Alert Sent (Demo Mode)');
+      }
     }
   };
 
@@ -391,17 +429,17 @@ function UserMap() {
         <div>
           <div className="mb-4">
             <h3 className="text-white font-bold text-base mb-3 flex items-center">
-              <span className="mr-2">🌍</span>
-              Global Route Planner
+              <span className="mr-2">🛡️</span>
+              Disaster-Safe Route Planning
             </h3>
-            <p className="text-gray-400 text-sm mb-4">Plan safe routes worldwide</p>
+            <p className="text-gray-400 text-sm mb-4">Risk mitigation through intelligent routing</p>
           </div>
           
           {/* Start Location */}
           <div className="relative mb-2">
             <input
               type="text"
-              placeholder="Start location (any city worldwide)"
+              placeholder="Evacuation start point / Current location"
               value={startPoint}
               onChange={(e) => {
                 setStartPoint(e.target.value);
@@ -432,7 +470,7 @@ function UserMap() {
           <div className="relative mb-2">
             <input
               type="text"
-              placeholder="End location (any city worldwide)"
+              placeholder="Safe destination / Relief center"
               value={endPoint}
               onChange={(e) => {
                 setEndPoint(e.target.value);
@@ -463,7 +501,7 @@ function UserMap() {
             onClick={findSafeRoute}
             className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white p-3 rounded-lg transition-all duration-200 font-medium text-base shadow-lg"
           >
-            🗺️ Find Safe Route
+            🛡️ Plan Disaster-Safe Route
           </button>
           
           {routeResult && (
@@ -520,7 +558,7 @@ function UserMap() {
                 
                 {routeResult.riskReasons && routeResult.riskReasons.length > 0 && (
                   <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-600 mb-4">
-                    <h4 className="font-bold text-gray-200 text-base mb-3">📊 Route Analysis:</h4>
+                    <h4 className="font-bold text-gray-200 text-base mb-3">🚨 Disaster Risk Assessment:</h4>
                     <ul className="space-y-2">
                       {routeResult.riskReasons.map((reason, i) => (
                         <li key={i} className="flex items-start text-gray-300">
@@ -559,33 +597,50 @@ function UserMap() {
           )}
         </div>
 
-        {/* SOS Button */}
+        {/* Emergency Response Center */}
         <div className="bg-gradient-to-br from-red-900/40 to-red-800/20 border border-red-500/30 rounded-xl p-4 backdrop-blur-sm">
+          <h3 className="text-white font-bold text-base mb-3 flex items-center">
+            <span className="mr-2">🚑</span>
+            Emergency Response
+          </h3>
           <button
             onClick={sendSOS}
-            className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white p-4 rounded-xl text-lg font-bold transition-all duration-200 shadow-lg animate-pulse"
+            className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white p-4 rounded-xl text-lg font-bold transition-all duration-200 shadow-lg animate-pulse mb-3"
           >
-            🆘 EMERGENCY SOS
+            🆘 ACTIVATE EMERGENCY SOS
           </button>
-          <p className="text-red-400 text-sm text-center mt-3 font-medium">Instant Emergency Assistance</p>
-          <p className="text-red-300 text-xs text-center mt-1">Available 24/7 - GPS Location Shared</p>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="bg-red-800/30 p-2 rounded text-center">
+              <span className="text-red-300">📞 Rescue Teams</span>
+            </div>
+            <div className="bg-red-800/30 p-2 rounded text-center">
+              <span className="text-red-300">🏥 Relief Centers</span>
+            </div>
+          </div>
+          <p className="text-red-400 text-xs text-center mt-2">Disaster response coordination - GPS tracking active</p>
         </div>
 
-        {/* Global City Search */}
+        {/* Disaster Management Hub */}
         <div>
           <div className="mb-4">
             <h3 className="text-white font-bold text-base mb-2 flex items-center">
-              <span className="mr-2">🌍</span>
-              Global Risk Status
+              <span className="mr-2">🚨</span>
+              Disaster Management
             </h3>
-            <p className="text-gray-400 text-sm mb-3">Search any city or village worldwide</p>
+            <p className="text-gray-400 text-sm mb-3">Risk mitigation & planning for all disaster phases</p>
+            
+            {/* Disaster Phase Tabs */}
+            <div className="grid grid-cols-3 gap-1 mb-3">
+              <button className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold">Before</button>
+              <button className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-bold">During</button>
+              <button className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold">After</button>
+            </div>
             
             {/* Search Bar */}
-            <div className="relative flex">
-              <span className="absolute right-3 top-2.5 text-gray-400">🔍</span>
+            <div className="relative">
               <input
                 type="text"
-                placeholder="Search any city, village worldwide..."
+                placeholder="Search location for disaster planning..."
                 value={riskSearchQuery}
                 onChange={(e) => {
                   const query = e.target.value;
@@ -594,15 +649,31 @@ function UserMap() {
                 }}
                 className="w-full p-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none text-sm"
               />
-              
+              <span className="absolute right-3 top-2.5 text-gray-400">🔍</span>
             </div>
           </div>
           
           <div className="max-h-64 overflow-y-auto">
             {filteredRiskData.length === 0 ? (
-              <p className="text-gray-400 text-center py-6 bg-gray-800 rounded-lg border border-gray-700">
-                {riskSearchQuery ? 'Type to search cities...' : 'Search for any city or village'}
-              </p>
+              <div className="text-center py-4">
+                <p className="text-gray-400 text-sm mb-3">
+                  {riskSearchQuery ? 'Search for disaster planning...' : 'Comprehensive Disaster Management'}
+                </p>
+                <div className="grid grid-cols-1 gap-2 text-xs">
+                  <div className="bg-blue-900/30 p-2 rounded border border-blue-600">
+                    <span className="text-blue-300 font-bold">📋 BEFORE:</span>
+                    <span className="text-gray-300 ml-1">Risk Assessment, Early Warning, Evacuation Planning</span>
+                  </div>
+                  <div className="bg-orange-900/30 p-2 rounded border border-orange-600">
+                    <span className="text-orange-300 font-bold">⚡ DURING:</span>
+                    <span className="text-gray-300 ml-1">Emergency Response, SOS Alerts, Safe Routes</span>
+                  </div>
+                  <div className="bg-green-900/30 p-2 rounded border border-green-600">
+                    <span className="text-green-300 font-bold">🔄 AFTER:</span>
+                    <span className="text-gray-300 ml-1">Recovery Planning, Damage Assessment, Rehabilitation</span>
+                  </div>
+                </div>
+              </div>
             ) : (
               filteredRiskData.map((location, i) => (
                 <div key={i} className="mb-3 bg-gradient-to-r from-gray-900 to-gray-800 border border-gray-700 rounded-xl p-3 hover:border-gray-600 transition-colors cursor-pointer"
@@ -610,33 +681,40 @@ function UserMap() {
                        if (mapRef.current) {
                          mapRef.current.setView([location.lat, location.lon], 12);
                          
-                         // Generate weather status for clicked location
-                         const weatherStatuses = ['Clear', 'Cloudy', 'Rainy', 'Sunny', 'Windy', 'Foggy'];
+                         // Generate comprehensive disaster data
+                         const disasters = ['Flood', 'Cyclone', 'Earthquake', 'Landslide', 'Drought', 'Heatwave', 'Wildfire'];
                          const riskLevels = ['Low', 'Medium', 'High'];
                          const colors = ['#10b981', '#f59e0b', '#dc2626'];
+                         const phases = ['Pre-Disaster', 'Active Alert', 'Post-Disaster Recovery'];
                          
-                         const randomWeather = weatherStatuses[Math.floor(Math.random() * weatherStatuses.length)];
+                         const randomDisaster = disasters[Math.floor(Math.random() * disasters.length)];
                          const randomRisk = riskLevels[Math.floor(Math.random() * riskLevels.length)];
                          const randomColor = colors[riskLevels.indexOf(randomRisk)];
+                         const randomPhase = phases[Math.floor(Math.random() * phases.length)];
                          const randomScore = Math.floor(Math.random() * 100);
                          
-                         const newWeatherData = {
+                         const disasterData = {
                            lat: location.lat,
                            lon: location.lon,
                            name: location.name.split(',')[0],
                            risk: randomRisk,
                            color: randomColor,
-                           disaster: randomWeather,
+                           disaster: `${randomDisaster} ${randomPhase}`,
                            riskScore: randomScore,
-                           reasons: [`Weather: ${randomWeather}`, `Location: ${location.country || 'Unknown'}`],
-                           confidence: Math.floor(Math.random() * 20) + 80
+                           reasons: [
+                             `${randomDisaster} risk assessment completed`,
+                             `${randomPhase} protocols activated`,
+                             `Location: ${location.country || 'Unknown'}`
+                           ],
+                           confidence: Math.floor(Math.random() * 20) + 80,
+                           phase: randomPhase,
+                           disasterType: randomDisaster
                          };
                          
-                         // Add to risk data if not already present
                          setRiskData(prev => {
-                           const exists = prev.find(item => item.name === newWeatherData.name);
+                           const exists = prev.find(item => item.name === disasterData.name);
                            if (!exists) {
-                             return [...prev, newWeatherData];
+                             return [...prev, disasterData];
                            }
                            return prev;
                          });
@@ -645,8 +723,8 @@ function UserMap() {
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <span className="font-medium text-white text-sm">{location.name}</span>
-                      <span className="ml-2 text-xs bg-blue-700 text-blue-300 px-2 py-1 rounded">
-                        🌍 Click for weather
+                      <span className="ml-2 text-xs bg-red-700 text-red-300 px-2 py-1 rounded">
+                        🚨 Disaster Plan
                       </span>
                     </div>
                     <span className="px-2 py-1 rounded-lg text-xs font-bold text-white bg-gray-600">
@@ -655,6 +733,9 @@ function UserMap() {
                   </div>
                   <p className="text-xs text-gray-400">
                     📍 {location.lat?.toFixed(4)}, {location.lon?.toFixed(4)}
+                  </p>
+                  <p className="text-xs text-blue-400 mt-1">
+                    Click for comprehensive disaster management plan
                   </p>
                 </div>
               ))

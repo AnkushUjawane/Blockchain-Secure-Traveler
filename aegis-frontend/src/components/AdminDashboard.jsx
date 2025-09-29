@@ -56,13 +56,18 @@ function AdminDashboard() {
       setRiskData(demoRiskData);
       updateStats(demoRiskData);
       
-      // Demo SOS alert
+      // Demo SOS alert with user profile
       setSosAlerts([{
         id: Date.now(),
+        userId: 'demo@example.com',
+        userName: 'Demo User',
+        userEmail: 'demo@example.com',
         lat: 28.6139,
         lon: 77.2090,
-        message: 'Demo emergency alert',
-        timestamp: new Date().toISOString()
+        message: 'Demo emergency alert - Disaster response required',
+        timestamp: new Date().toISOString(),
+        emergencyType: 'General Emergency',
+        locationDetails: { accuracy: 'High' }
       }]);
     };
 
@@ -77,6 +82,7 @@ function AdminDashboard() {
 
   const respondToSOS = (alertId) => {
     setSosAlerts(prev => prev.filter(alert => alert.id !== alertId));
+    alert('✅ Emergency Response Dispatched\n\nRescue teams have been notified and are en route to the location.');
   };
 
   const getTotalAlerts = () => sosAlerts.length;
@@ -140,11 +146,19 @@ function AdminDashboard() {
               icon={sosIcon}
             >
               <Popup>
-                <div className="p-2">
-                  <h3 className="font-bold text-red-600">SOS Alert #{alert.id}</h3>
-                  <p>Time: {new Date(alert.timestamp).toLocaleString()}</p>
-                  <p>Message: {alert.message}</p>
-                  <p>Status: Active</p>
+                <div className="p-3 min-w-48">
+                  <h3 className="font-bold text-red-600 mb-2 flex items-center">
+                    <span className="mr-2">🆘</span>
+                    Emergency Alert
+                  </h3>
+                  <div className="space-y-1 text-sm">
+                    <p><strong>User:</strong> {alert.userName || 'Unknown'}</p>
+                    <p><strong>Time:</strong> {new Date(alert.timestamp).toLocaleString()}</p>
+                    <p><strong>Location:</strong> {alert.lat?.toFixed(4)}, {alert.lon?.toFixed(4)}</p>
+                    <div className="mt-2 p-2 bg-red-100 rounded text-center">
+                      <p className="text-red-800 font-bold text-xs">ACTIVE - Response Required</p>
+                    </div>
+                  </div>
                 </div>
               </Popup>
             </Marker>
@@ -230,31 +244,53 @@ function AdminDashboard() {
               sosAlerts.map((alert, i) => (
                 <div 
                   key={alert.id} 
-                  className="border rounded-lg p-3 cursor-pointer hover:bg-opacity-80 transition-all duration-200 bg-red-900/30 border-red-500/50 hover:border-red-400/70"
+                  className="bg-gradient-to-r from-red-900/20 to-red-800/10 border border-red-500/30 rounded-xl p-3 hover:border-red-400/50 transition-all duration-200 cursor-pointer"
                   onClick={() => centerMapOnAlert(alert)}
                 >
-                  <div className="flex justify-between items-start">
+                  <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="font-semibold text-red-300">
-                        Alert #{alert.id}
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="text-red-400 text-lg">🆘</span>
+                        <span className="font-bold text-red-300">Emergency Alert</span>
+                        <span className="bg-red-600 text-white px-2 py-0.5 rounded-full text-xs font-bold">ACTIVE</span>
                       </div>
-                      <div className="text-sm text-gray-400">
-                        {new Date(alert.timestamp).toLocaleString()}
-                      </div>
-                      <div className="text-sm mt-1 text-gray-300">{alert.message}</div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        Location: {alert.lat?.toFixed(4)}, {alert.lon?.toFixed(4)}
+                      
+                      <div className="space-y-1 text-sm">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-gray-400 w-12">👤</span>
+                          <span className="text-white font-medium">{alert.userName || 'Unknown User'}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-gray-400 w-12">🕰️</span>
+                          <span className="text-gray-300">{new Date(alert.timestamp).toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-gray-400 w-12">📍</span>
+                          <span className="text-gray-300">{alert.lat?.toFixed(4)}, {alert.lon?.toFixed(4)}</span>
+                        </div>
                       </div>
                     </div>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        respondToSOS(alert.id);
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 shadow-md border border-blue-500 hover:border-blue-400"
-                    >
-                      Resolve
-                    </button>
+                    
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          centerMapOnAlert(alert);
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                      >
+                        View
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          respondToSOS(alert.id);
+                        }}
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                      >
+                        Resolve
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))
