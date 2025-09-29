@@ -10,6 +10,18 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// Hospital marker
+const hospitalIcon = new L.Icon({
+  iconUrl: 'data:image/svg+xml;base64,' + btoa(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="28" height="28">
+      <circle cx="12" cy="12" r="10" fill="#059669"/>
+      <path d="M12 6v12M6 12h12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  `),
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+});
+
 function UserMap() {
   const [riskData, setRiskData] = useState([]);
   const [startPoint, setStartPoint] = useState('');
@@ -26,6 +38,7 @@ function UserMap() {
   const [filteredRiskData, setFilteredRiskData] = useState([]);
   const [globalSearchResults, setGlobalSearchResults] = useState([]);
   const [sosAlerts, setSosAlerts] = useState([]);
+  const [hospitals, setHospitals] = useState([]);
   const mapRef = useRef(null);
   const searchTimeoutRef = useRef(null);
 
@@ -74,6 +87,60 @@ function UserMap() {
       ];
       setRiskData(comprehensiveRiskData);
       setFilteredRiskData(comprehensiveRiskData);
+      
+      // Set hospitals across India near risk zones
+      setHospitals([
+        // Delhi NCR Hospitals
+        { id: 1, name: 'AIIMS Delhi', lat: 28.5672, lon: 77.2100, beds: 120, city: 'Delhi', contact: '+91-11-26588500' },
+        { id: 2, name: 'Safdarjung Hospital', lat: 28.5738, lon: 77.2088, beds: 85, city: 'Delhi', contact: '+91-11-26165060' },
+        { id: 3, name: 'Max Hospital Gurgaon', lat: 28.4595, lon: 77.0266, beds: 95, city: 'Gurgaon', contact: '+91-124-6623000' },
+        
+        // Mumbai Hospitals
+        { id: 4, name: 'Tata Memorial Hospital', lat: 19.0176, lon: 72.8562, beds: 150, city: 'Mumbai', contact: '+91-22-24177000' },
+        { id: 5, name: 'KEM Hospital Mumbai', lat: 19.0330, lon: 72.8397, beds: 200, city: 'Mumbai', contact: '+91-22-24136051' },
+        { id: 6, name: 'Lilavati Hospital', lat: 19.0544, lon: 72.8322, beds: 130, city: 'Mumbai', contact: '+91-22-26567891' },
+        
+        // Bangalore Hospitals
+        { id: 7, name: 'Manipal Hospital', lat: 12.9698, lon: 77.5986, beds: 180, city: 'Bangalore', contact: '+91-80-25023200' },
+        { id: 8, name: 'Apollo Hospital Bangalore', lat: 12.9698, lon: 77.6489, beds: 250, city: 'Bangalore', contact: '+91-80-26304050' },
+        
+        // Chennai Hospitals
+        { id: 9, name: 'Apollo Hospital Chennai', lat: 13.0358, lon: 80.2297, beds: 200, city: 'Chennai', contact: '+91-44-28296000' },
+        { id: 10, name: 'Stanley Medical College', lat: 13.0878, lon: 80.2785, beds: 160, city: 'Chennai', contact: '+91-44-25281351' },
+        
+        // Kolkata Hospitals
+        { id: 11, name: 'SSKM Hospital Kolkata', lat: 22.5726, lon: 88.3639, beds: 140, city: 'Kolkata', contact: '+91-33-22041000' },
+        { id: 12, name: 'Apollo Gleneagles', lat: 22.5448, lon: 88.3426, beds: 195, city: 'Kolkata', contact: '+91-33-23203040' },
+        
+        // Hyderabad Hospitals
+        { id: 13, name: 'Apollo Hospital Hyderabad', lat: 17.4126, lon: 78.4482, beds: 175, city: 'Hyderabad', contact: '+91-40-23607777' },
+        { id: 14, name: 'NIMS Hospital', lat: 17.4239, lon: 78.4738, beds: 120, city: 'Hyderabad', contact: '+91-40-23318253' },
+        
+        // Pune Hospitals
+        { id: 15, name: 'Ruby Hall Clinic', lat: 18.5089, lon: 73.8553, beds: 110, city: 'Pune', contact: '+91-20-26122491' },
+        { id: 16, name: 'Jehangir Hospital', lat: 18.5314, lon: 73.8446, beds: 95, city: 'Pune', contact: '+91-20-26127900' },
+        
+        // Ahmedabad Hospitals
+        { id: 17, name: 'Apollo Hospital Ahmedabad', lat: 23.0395, lon: 72.5066, beds: 130, city: 'Ahmedabad', contact: '+91-79-26630200' },
+        { id: 18, name: 'Civil Hospital Ahmedabad', lat: 23.0315, lon: 72.5797, beds: 180, city: 'Ahmedabad', contact: '+91-79-22680074' },
+        
+        // Jaipur Hospitals
+        { id: 19, name: 'SMS Hospital Jaipur', lat: 26.9124, lon: 75.7873, beds: 140, city: 'Jaipur', contact: '+91-141-2518121' },
+        { id: 20, name: 'Fortis Escorts Jaipur', lat: 26.8854, lon: 75.8069, beds: 100, city: 'Jaipur', contact: '+91-141-2713200' },
+        
+        // Lucknow Hospitals
+        { id: 21, name: 'SGPGI Lucknow', lat: 26.8467, lon: 80.9462, beds: 160, city: 'Lucknow', contact: '+91-522-2668700' },
+        { id: 22, name: 'KGMU Lucknow', lat: 26.8393, lon: 80.9231, beds: 120, city: 'Lucknow', contact: '+91-522-2257540' },
+        
+        // Kanpur Hospitals
+        { id: 23, name: 'GSVM Medical College', lat: 26.4499, lon: 80.3319, beds: 110, city: 'Kanpur', contact: '+91-512-2557428' },
+        
+        // Goa Hospitals
+        { id: 24, name: 'Goa Medical College', lat: 15.2993, lon: 74.1240, beds: 80, city: 'Goa', contact: '+91-832-2458700' },
+        
+        // Shimla Hospitals
+        { id: 25, name: 'IGMC Shimla', lat: 31.1048, lon: 77.1734, beds: 70, city: 'Shimla', contact: '+91-177-2803073' }
+      ]);
     };
 
     return () => ws.close();
@@ -414,6 +481,45 @@ function UserMap() {
             </Marker>
           )}
           
+          {/* Hospital Markers */}
+          {hospitals.map((hospital) => (
+            <Marker
+              key={hospital.id}
+              position={[hospital.lat, hospital.lon]}
+              icon={hospitalIcon}
+            >
+              <Popup>
+                <div className="p-3 min-w-64">
+                  <h3 className="font-bold text-green-600 mb-2 flex items-center">
+                    <span className="mr-2">🏥</span>
+                    {hospital.name}
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="font-semibold">City:</span>
+                      <span className="text-blue-600 font-bold">{hospital.city}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Available Beds:</span>
+                      <span className="text-green-600 font-bold">{hospital.beds}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Contact:</span>
+                      <span className="text-blue-600">{hospital.contact}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Status:</span>
+                      <span className="text-green-600 font-bold">24/7 Emergency</span>
+                    </div>
+                    <div className="mt-3 p-2 bg-green-100 rounded text-center">
+                      <p className="text-green-800 font-bold text-xs">✅ READY FOR EMERGENCY RESPONSE</p>
+                    </div>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+          
           {/* User Location */}
           <Marker position={userLocation}>
             <Popup>Your Current Location</Popup>
@@ -618,6 +724,47 @@ function UserMap() {
             </div>
           </div>
           <p className="text-red-400 text-xs text-center mt-2">Disaster response coordination - GPS tracking active</p>
+        </div>
+
+        {/* Nearby Hospitals */}
+        <div className="mb-6">
+          <div className="mb-4">
+            <h3 className="text-white font-bold text-base mb-2 flex items-center">
+              <span className="mr-2">🏥</span>
+              Hospitals Across India ({hospitals.length})
+            </h3>
+            <p className="text-green-400 text-sm mb-3">Emergency medical facilities near risk zones</p>
+          </div>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {hospitals.map((hospital) => (
+              <div 
+                key={hospital.id} 
+                className="bg-gradient-to-r from-green-900/20 to-green-800/10 border border-green-500/30 rounded-lg p-3 hover:border-green-400/50 transition-all cursor-pointer"
+                onClick={() => {
+                  if (mapRef.current) {
+                    mapRef.current.setView([hospital.lat, hospital.lon], 15);
+                  }
+                }}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex-1">
+                    <div className="font-medium text-green-300 text-sm">{hospital.name}</div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      <span>🏢 {hospital.city}</span>
+                      <span className="ml-3">🛏️ {hospital.beds} beds</span>
+                    </div>
+                    <div className="text-xs text-blue-400 mt-1">
+                      📞 {hospital.contact}
+                    </div>
+                  </div>
+                  <span className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold">24/7</span>
+                </div>
+                <div className="text-xs text-green-400">
+                  ✅ Click to view location on map
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Disaster Management Hub */}
