@@ -380,7 +380,7 @@ setInterval(broadcastRiskData, 30000);
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  console.log(`🛡️ Aegis backend running on port ${PORT}`);
+  console.log(`🛡️ Avinya backend running on port ${PORT}`);
   console.log(`📡 Real-time India-wide disaster monitoring active`);
   console.log(`🗺️ Routing service: External + Internal fallback`);
   console.log(`🌐 Global location search enabled`);

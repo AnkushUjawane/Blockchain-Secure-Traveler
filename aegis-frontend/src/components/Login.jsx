@@ -12,20 +12,20 @@ function Login({ onLogin }) {
     e.preventDefault();
 
     if (isLogin) {
-      const users = JSON.parse(localStorage.getItem("aegis_users") || "[]");
+      const users = JSON.parse(localStorage.getItem("Avinya_users") || "[]");
       const user = users.find(
         (u) => u.email === formData.email && u.password === formData.password
       );
 
       if (user) {
-        localStorage.setItem("aegis_current_user", JSON.stringify(user));
+        localStorage.setItem("Avinya_current_user", JSON.stringify(user));
         onLogin(user);
       } else {
         alert("Invalid credentials");
       }
     } else {
       // Register logic
-      const users = JSON.parse(localStorage.getItem("aegis_users") || "[]");
+      const users = JSON.parse(localStorage.getItem("Avinya_users") || "[]");
 
       if (users.find((u) => u.email === formData.email)) {
         alert("Email already registered");
@@ -40,8 +40,8 @@ function Login({ onLogin }) {
       };
 
       users.push(newUser);
-      localStorage.setItem("aegis_users", JSON.stringify(users));
-      localStorage.setItem("aegis_current_user", JSON.stringify(newUser));
+      localStorage.setItem("Avinya_users", JSON.stringify(users));
+      localStorage.setItem("Avinya_current_user", JSON.stringify(newUser));
       onLogin(newUser);
     }
   };
@@ -60,7 +60,7 @@ function Login({ onLogin }) {
               <span className="text-xl">🛡️</span>
             </div>
             <h1 className="text-4xl font-black text-white tracking-tight mb-1">
-              Aegis
+              Avinya
             </h1>
             <p className="text-blue-100 text-lg font-bold mb-1">
               Smart Tourist Safety Monitor
@@ -131,7 +131,7 @@ function Login({ onLogin }) {
                     : "bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white"
                 }`}
               >
-                {isLogin ? "🚀 Enter Aegis" : "✨ Join Aegis"}
+                {isLogin ? "🚀 Enter Avinya" : "✨ Join Avinya"}
               </button>
             </div>
           </form>

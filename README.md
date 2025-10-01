@@ -1,4 +1,4 @@
-# 🛡️ Aegis - Smart Tourist Safety Monitoring
+# 🛡️ Avinya - Smart Tourist Safety Monitoring
 
 A real-time safety navigator that protects tourists and citizens from natural disasters using predictive analytics.
 
@@ -13,14 +13,14 @@ A real-time safety navigator that protects tourists and citizens from natural di
 
 ### Backend Setup
 ```bash
-cd aegis-backend
+cd avinya-backend
 npm install
 npm start
 ```
 
 ### Frontend Setup
 ```bash
-cd aegis-frontend
+cd avinya-frontend
 npm install
 npm run dev
 ```

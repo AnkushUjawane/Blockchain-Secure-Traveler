@@ -186,31 +186,7 @@ function AdminDashboard() {
             </Marker>
           ))}
           
-          {/* Hospital Markers */}
-          {hospitals.map((hospital) => (
-            <Marker
-              key={hospital.id}
-              position={[hospital.lat, hospital.lon]}
-              icon={hospitalIcon}
-            >
-              <Popup>
-                <div className="p-3 min-w-48">
-                  <h3 className="font-bold text-green-600 mb-2 flex items-center">
-                    <span className="mr-2">🏥</span>
-                    {hospital.name}
-                  </h3>
-                  <div className="space-y-1 text-sm">
-                    <p><strong>Available Beds:</strong> {hospital.beds}</p>
-                    <p><strong>Distance:</strong> {hospital.distance}</p>
-                    <p><strong>Status:</strong> <span className="text-green-600">Operational</span></p>
-                    <div className="mt-2 p-2 bg-green-100 rounded text-center">
-                      <p className="text-green-800 font-bold text-xs">READY FOR EMERGENCY</p>
-                    </div>
-                  </div>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+
         </MapContainer>
       </div>
       
@@ -347,32 +323,7 @@ function AdminDashboard() {
           </div>
         </div>
 
-        {/* Nearby Hospitals */}
-        <div className="p-4 border-t border-gray-800">
-          <div className="mb-4">
-            <h3 className="text-white font-bold text-base mb-2 flex items-center">
-              <span className="mr-2">🏥</span>
-              Nearby Hospitals ({hospitals.length})
-            </h3>
-            <p className="text-green-400 text-sm">Emergency medical facilities</p>
-          </div>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {hospitals.map((hospital) => (
-              <div key={hospital.id} className="bg-gradient-to-r from-green-900/20 to-green-800/10 border border-green-500/30 rounded-lg p-2">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="font-medium text-green-300 text-sm">{hospital.name}</div>
-                    <div className="text-xs text-gray-400 mt-1">
-                      <span>🛏️ {hospital.beds} beds</span>
-                      <span className="ml-3">📍 {hospital.distance}</span>
-                    </div>
-                  </div>
-                  <span className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold">READY</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+
 
         {/* Risk Zones Detail */}
         <div className="p-4 border-t border-gray-800">
